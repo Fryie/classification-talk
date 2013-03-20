@@ -1,0 +1,14 @@
+[4mRunning "jshint:files" (jshint) task[24m
+[32m>> [39m2 files lint free.
+
+[4mRunning "cssmin:compress" (cssmin) task[24m
+File css/reveal.min.css created.
+Uncompressed size: [32m31597[39m bytes.
+Compressed size: [32m2765[39m bytes gzipped ([32m23416[39m bytes minified).
+
+[4mRunning "uglify:build" (uglify) task[24m
+File "js/reveal.min.js" created.
+Uncompressed size: [32m57025[39m bytes.
+Compressed size: [32m3635[39m bytes gzipped ([32m20066[39m bytes minified).
+
+[32mDone, without errors.[39m

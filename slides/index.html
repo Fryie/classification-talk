@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+
+    <title>Textklassifikation mit Ruby</title>
+
+    <meta name="description" content="Textklassifikation mit Ruby - Eine kurze Einführung">
+    <meta name="author" content="Pierpaolo Frasa">
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <link rel="stylesheet" href="css/reveal.min.css">
+    <link rel="stylesheet" href="css/theme/serif-modif.css" id="theme">
+
+    <!-- For syntax highlighting -->
+    <link rel="stylesheet" href="lib/css/zenburn.css">
+
+    <!-- If the query includes 'print-pdf', use the PDF print sheet -->
+    <script>
+      document.write( '<link rel="stylesheet" href="css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+    </script>
+
+    <!-- nice font -->
+    <link href="http://fonts.googleapis.com/css?family=Lora:400,700" media="screen" rel="stylesheet" type="text/css" />
+
+    <!-- MathJax -->
+    <script type="text/javascript" 
+      src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+    <!--[if lt IE 9]>
+    <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+
+    <div class="reveal">
+
+      <!-- Any section element inside of this container is displayed as a slide -->
+      <div class="slides">
+        <section data-markdown>
+          ## Textklassifikation mit Ruby
+          ### Eine kurze Einführung
+
+          #### Pierpaolo Frasa &ndash; [@Tainnor](https://twitter.com/Tainnor) &ndash; [github](https://github.com/Fryie/)
+        </section>
+        <section data-markdown>
+          ### Was ist Textklassifikation?
+          *Automatische* Zuweisung von (typischerweise) unstrukturierten *Texten* zu einer von n *Klassen*
+        </section>
+        <section data-markdown>
+          ### Regelbasiert vs. statistisch
+          - Statistische Verfahren funktionieren in der Praxis meist besser
+          - Sind einfacher zu implementieren
+          - Oftmals werden auch hybride Verfahren verwendet
+          - Domänenspezifisches Wissen für viele statistische Verfahren trotzdem noch nötig!
+        </section>
+        <section data-markdown>
+          ### Anwendungen
+          - Spam-Erkennung (SpamAssassin)
+          - Suchmaschinen/Content-Portale
+          - Sprachidentifizierung
+          - Sentiment Analysis
+       </section>
+       <section data-markdown>
+          ### Grundlagen
+          - Maschinelles Lernen (Machine Learning)
+          - Maschinelle Sprachverarbeitung (Natural Language Processing)
+        </section>
+        <section data-markdown>
+          ### Supervised Learning
+          - Klassifikator wird auf einer Menge vorannotierter Daten &bdquo;trainiert&ldquo; (Trainings-Set)
+          - **wichtig:** Testen auf ebenfalls vorannotierten Daten &ndash; aber **nicht** denselben (Test-Set)
+          - Bei schlechter Performance: Zu wenig Daten, schlechte Daten, keine aussagekräftigen Merkmale, Parameter ungünstig gesetzt, etc.
+          - Oftmals auch Cross-Validation-Set &ndash; gängige Aufteilung 60%/20%/20%
+          </section>
+          <section data-markdown>
+          ### Proof-of-concept-Programm
+          - Gegeben: Eine Liste von Tweets, die das Wort &bdquo;rails&ldquo; enthalten
+          - Gesucht: Ein Klassifikator, der für jeden Tweet entscheidet, ob es um Ruby on Rails geht
+        </section>
+        <section>
+          <h3>Daten - woher?</h3>
+          <pre><code>
+            $ gem install t
+            $ t search all -n 200 rails --csv &gt; rails.csv
+          </code></pre>
+          <p><a href="https://github.com/sferik/t">t gem (Twitter CLI)</a></p>
+          <p>Daten vorannotieren</p>
+        </section>
+        <section>
+          <h3>Ein simpler Klassifikator in Ruby</h3>
+          <p><em>Eigentlich</em> ein Fünfzeiler:</p>
+          <pre><code>
+            classifier = Classifier::Bayes.new(*grouped.keys)
+            train.each do |datapoint| 
+              classifier.train(datapoint[:topic], 
+              datapoint[:text])
+            end
+          </code></pre>
+          <a href="https://github.com/cardmagic/classifier">Classifier gem</a>
+          <p>=&gt; Codebeispiel</p>
+        </section>
+        <section>
+          <h3>Naïve Bayes</h3>
+          <p><strong>Bayes-Theorem:</strong></p>
+          <p>$$ P(A|B) = \frac{P(B|A)P(A)}{P(B)}$$</p>
+          <p class="fragment">$$ P(RoR|tweet) = \frac{P(tweet|RoR)P(RoR)}{P(tweet)}$$</p>
+          <p class="fragment">Wieso <em>naiv?</em></p>
+        </section>
+        <section>
+          <p>P(tweet) = P(&bdquo;Je Te Jette ton sac sur les rails,no&ldquo;) = ????</p>
+          <p class="fragment">P(RoR|&bdquo;Je Te Jette ton sac sur les rails,no&ldquo;) = ????</p>
+          <div class="fragment">
+            <h4>Naive Annahme (Bag-of-Words-Modell):</h4>
+            <p>$$ P(tweet) \approx P(wort_{1})\cdot P(wort_{2})\cdot\ldots\cdot P(wort_{n})$$</p>
+            <p>$$ P(RoR|tweet) \approx P(RoR|wort_{1})\cdot P(RoR|wort_{2})\cdot\ldots\cdot P(RoR|wort_{n})$$</p>
+          </div>
+          <div class="fragment">
+            <p>Eigentlich keine gute Hypothese:</p>
+            <p><em>I kill you</em> $$\ne$$ <em>You kill me</em></p>
+          </div>
+          <p class="fragment">... scheint aber trotzdem zu funktionieren</p>
+        </section>
+        <section data-markdown>
+          ### Andere Verfahren
+          - Merkmalsvektoren: *n* Merkmale für jede zu klassifizierende Einheit
+          - Merkmale können alles mögliche sein: Kreativität gefragt!
+          - **Support Vector Machines**, Neuronale Netze, Logistische Regression
+          - [SVMs in Ruby](http://www.igvita.com/2008/01/07/support-vector-machines-svm-in-ruby/)
+        </section>
+        <section data-markdown>
+          ### Linguistische Vorverarbeitung
+          - Vorkommen von Wörtern (wie bei Naïve Bayes)
+          - Tokenisierung, Normalisierung, Stemming
+          - Wortarten (Part-of-Speech-Tagging)
+          - Syntaxanalysen (aufwändig, fehlerbehaftet &ndash; oftmals nur &bdquo;chunking&ldquo;)
+          - Anaphernresolution (&bdquo;Max sieht Peter. **Er** ...&ldquo;)
+          - ...
+          - kann alles zur Konstruktion von Merkmalen verwendet werden
+        </section>
+        <section data-markdown>
+          ### Evaluation
+          - an **unabhängigem** Test-Set
+          - naiv: richtige Entscheidungen/alle Entscheidungen
+          - was ist, wenn eine Klasse viel häufiger ist als die andere?
+          - Precision, Recall, F-Measure
+          - Bei mehr als zwei Klassen: Micro-Averaging, Macro-Averaging
+        </section>
+        <section data-markdown>
+          ### Weiterführende Links
+          - [Ilya Grigoriks Blog](http://www.igvita.com/)
+          - [Sentiment Analysis Tutorial](http://sentiment.christopherpotts.net/)
+          - [Stanford's Machine Learning Course](https://www.coursera.org/course/ml)
+          - [Stanford's Natural Language Processing Course](https://www.coursera.org/course/nlp)
+          - [Information Retrieval Book](http://nlp.stanford.edu/IR-book/)
+        </section>
+      </div>
+    </div>
+
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.min.js"></script>
+
+    <script>
+
+      // Full list of configuration options available here:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+
+        theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+        transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+        // Optional libraries used to extend on reveal.js
+        dependencies: [
+        { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+        { src: 'plugin/markdown/showdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+        { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+        { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+        { src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+        { src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+        // { src: 'plugin/search/search.js', async: true, condition: function() { return !!document.body.classList; } }
+        // { src: 'plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+        ]
+      });
+
+    </script>
+
+  </body>
+</html>
